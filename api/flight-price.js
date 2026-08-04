@@ -11,13 +11,15 @@ export default async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
   if (req.method === "OPTIONS") return res.status(200).end();
 
-  const { origin, destination, date } = req.query;
+  const { origin, destination, date, passengers } = req.query;
 
   if (!origin || !destination || !date) {
     return res.status(400).json({
       error: "Missing required params. Need: origin, destination, date (YYYY-MM-DD)",
     });
   }
+
+  const paxCount = Math.max(1, Math.min(9, parseInt(passengers, 10) || 1));
 
   try {
     // Step 1: create an offer request (Duffel's search step)
@@ -37,7 +39,7 @@ export default async function handler(req, res) {
               departure_date: date,
             },
           ],
-          passengers: [{ type: "adult" }],
+          passengers: Array.from({ length: paxCount }, () => ({ type: "adult" })),
           cabin_class: "economy",
         },
       }),
