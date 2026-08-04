@@ -1,0 +1,6 @@
+{
+  "name": "captain-ledger-api",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Serverless proxy for the Captain's Ledger app - keeps Amadeus API credentials off the frontend."
+}
