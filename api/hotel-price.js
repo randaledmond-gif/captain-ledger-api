@@ -1,12 +1,13 @@
 // Vercel Serverless Function
 // Deployed URL will look like: https://your-project.vercel.app/api/hotel-price
-// Call it like: /api/hotel-price?destination=Valencia,%20Spain&guests=2
+// Call it like: /api/hotel-price?destination=Valencia,%20Spain
 //
-// Uses Xotelo (data.xotelo.com) — a free hotel-pricing API with NO key,
-// NO signup, and no sales gate (unlike Duffel Stays, which requires a
-// sales contact even on an otherwise-free account). Two-step process:
-// 1. /search by city name to find a location_key
-// 2. /list with that location_key to get real hotels + price ranges
+// Uses Xotelo Hotel Prices via RapidAPI (real hotel data, real price
+// ranges). Requires a RAPIDAPI_KEY environment variable set in Vercel —
+// get it from your RapidAPI dashboard after subscribing to the free tier
+// of the "Xotelo - Hotel Prices" API.
+
+const RAPIDAPI_HOST = "xotelo-hotel-prices.p.rapidapi.com";
 
 export default async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
@@ -21,10 +22,17 @@ export default async function handler(req, res) {
     });
   }
 
+  const headers = {
+    "Content-Type": "application/json",
+    "x-rapidapi-host": RAPIDAPI_HOST,
+    "x-rapidapi-key": process.env.RAPIDAPI_KEY,
+  };
+
   try {
     // Step 1: search by city name to find a location_key
     const searchRes = await fetch(
-      `https://data.xotelo.com/api/search?query=${encodeURIComponent(destination)}`
+      `https://${RAPIDAPI_HOST}/api/search?query=${encodeURIComponent(destination)}&location_type=accommodation`,
+      { headers }
     );
 
     if (!searchRes.ok) {
@@ -46,7 +54,8 @@ export default async function handler(req, res) {
 
     // Step 2: pull real hotel listings + price ranges for that location
     const listRes = await fetch(
-      `https://data.xotelo.com/api/list?location_key=${encodeURIComponent(locationKey)}&limit=5`
+      `https://${RAPIDAPI_HOST}/api/list?location_key=${encodeURIComponent(locationKey)}&limit=5&offset=0&sort=best_value`,
+      { headers }
     );
 
     if (!listRes.ok) {
